@@ -28,6 +28,10 @@ func main() {
 			}
 
 			handleModelUpdate := func(e *core.RecordEvent) error {
+				if strings.HasPrefix(e.Record.Collection().Name, "_") {
+					return e.Next()
+				}
+
 				json, err := json.Marshal(e.Record)
 				jsonBody := bytes.NewBuffer(json)
 				_, err = http.Post(v, "application/json", jsonBody)
