@@ -21,25 +21,25 @@ func main() {
 
 	callback_url := os.Getenv("CMS_CALLBACK_URL")
 	if len(callback_url) > 0 {
-		for _, v := range strings.Split(callback_url, ";") {
+		for v := range strings.SplitSeq(callback_url, ";") {
 			_, err := url.ParseRequestURI(v)
 			if err != nil {
 				panic(err)
 			}
 
-			handleModelUpdate := func(e *core.ModelEvent) error {
-				json, err := json.Marshal(e.Model)
+			handleModelUpdate := func(e *core.RecordEvent) error {
+				json, err := json.Marshal(e.Record)
 				jsonBody := bytes.NewBuffer(json)
 				_, err = http.Post(v, "application/json", jsonBody)
 				if err != nil {
 					log.Fatalln(err)
 				}
-				return nil
+				return e.Next()
 			}
 
-			app.OnModelAfterCreate().Add(handleModelUpdate)
-			app.OnModelAfterUpdate().Add(handleModelUpdate)
-			app.OnModelAfterDelete().Add(handleModelUpdate)
+			app.OnRecordAfterCreateSuccess().BindFunc(handleModelUpdate)
+			app.OnRecordAfterUpdateSuccess().BindFunc(handleModelUpdate)
+			app.OnRecordAfterDeleteSuccess().BindFunc(handleModelUpdate)
 		}
 	}
 
