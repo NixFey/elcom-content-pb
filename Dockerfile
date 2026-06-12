@@ -7,6 +7,8 @@ COPY go.sum .
 # Get dependancies - will also be cached if we won't change mod/sum
 RUN go mod download
 
+ENV CGO=0
+
 COPY . .
 RUN go build -ldflags="-extldflags=-static" -o /out/cms .
 
